@@ -356,8 +356,7 @@
 
 		a = A()
 
-		def f():
-		
+		def f():		
 			return a.x
 
 		@mock.patch('src/controller/a')
