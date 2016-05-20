@@ -645,7 +645,6 @@
 				...
 				def __iter__(self):
 					return MyListIterator(self)
-
 			--------original iterator-------------:
 				def f():
 					for i in range(5):
@@ -677,11 +676,172 @@
 				f(0,g(...))
 	в стандартній бібліотеці пайтон є модуль itertools 
 	там є функції і різні способи використання yield
-
-	------------------------05/13/16--------------------------:
+@04/15
+======Class (part 3)============================================================================================================================================================================:
+	class A:
 		
+		def __init__(self, arg):
+			self.x = 0
+	a = A()
+	__dict__ =={'x':0}
+	a.x = 1
+	a.__dict__['x'] = 1
 
+	locals() -> повертає весь локальний контекс
+	globals() -> повертає весь глобальний контекст
+
+
+	коли присвоємо значення викликаєтся
+	__setattr__
+	[a.x = 1]
+			
+	коли видаляємо значення викликаєтся
+	__delattr__
+	[del a.x]
 	
+	коли отримуємо значення викликаєтся
+	__getattribute__
+	[a.x]
+
+	-------readOnlyAttr-----:
+		Не працюватиме це тому що коли self.x = 0 викликаєтся __setattr__
+			class A:
+			def __init__(self, arg):
+				self.x = 0
+
+			def __setattr__(self,name,value):
+				if(name=='x'):
+					raise AttributeError('Read_Only_Attr')
+				else:
+					super().__setattr__(name,value)
+		ПРАЦЮЄ
+			class A:
+			def __init__(self, arg):
+				self.x = 0
+
+			def __setattr__(self,name,value):
+				if name=='x' and hasattr(self,name):
+					raise AttributeError('Read_Only_Attr')
+				else:
+					super().__setattr__(name,value)
+
+		a = A()
+		a.x
+		a.x = 1 -> AttributeError('Read_Only_Attr')
+		але тепер 
+		del a.x 
+		a.x = 1 -> все ок =)
+		треба ще добавити
+
+			class A:
+			def __init__(self, arg):
+				self.x = 0
+
+			def __setattr__(self,name,value):
+				if name=='x' and hasattr(self,name):
+					raise AttributeError('Read_Only_Attr')
+				else:
+					super().__setattr__(name,value)
+			++++++++++++++++++++++++++++++++++++++++++++++++++
+			def __delattr__(self,name):
+				if name =='x':
+					raise AttributeError('Read_Only_Attr')
+				else:
+					super().__delattr__(name)
+	-------приклади використання __getattr__---------------:
+		class A:
+			def __init__(self):
+				self.arg = arg
+
+			def __getattr__(self,name):
+				return 42
+
+
+		class A:
+			def m1(self):
+				print('A.m1')
+			def m2(self):
+				print('A.m2')
+		class Proxy:
+			def __init__(self, arg):
+				self.a = A()
+			
+			def m3(self):
+				print('Proxy.m3')
+			def __getattr__(self,name):
+				return getattr(self.a,name)
+
+		p = Proxy()
+		p.m4() -> AttributeError 
+		Краще перевірити hasattr чи є такий метод в іншому класі
+	-------Patern NullObject-------------:
+		class NullObject:
+			def __getattr__(self,name):
+				return labda *args,**kwargs: None
+	--------DESCRIPTOR-----------:
+		class Length:
+			def __set__(self,obj,value):
+				obj._length = value / 1000
+			def __get__(self,obj,abjtype):
+				return obj._length*1000
+		class Line:
+			def __init__(self):
+				sefl._length = 0
+			legth = Length()
+
+		l = Line()
+		l.legth = 5
+		l.legth 
+		class Line:
+			def __init__(self):
+				super._length = 0
+			@property
+			def length(self):
+			    return self._length*1000
+			@length.setter
+			def length(self,value):
+				self._length = value/1000
+
+	--------Constructor-----------:
+		__new__()
+
+		class A:
+			def __new__(cls):
+				return 42
+		a = A()
+
+		>>> a
+		>>> 42
+		>>> type(a)
+		>>> int
+
+		якщо норм тоді
+		class A:
+			def __new__(cls):
+				print('New')
+				return suler().__new__(cls)
+			def __init__(self):
+				print('Init')
+		a = A()
+		>>> New
+		>>> Init
+
+	-----------SingleTone-----------:
+		class Singletone:
+			def __new__(cls):
+				if not hasattr(cls._inst):
+					cls._inst = super().__new__(cls)
+				return cls._inst
+		double checked Singletone
+			class  A:
+				x = 42
+
+
+
+
+
+
+
 
 
 
